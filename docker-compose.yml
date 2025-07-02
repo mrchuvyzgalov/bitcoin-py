@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  node1:
+    build: .
+    container_name: cli_node1
+    networks:
+      bitcoin_net:
+        ipv4_address: 172.28.0.11
+    stdin_open: true
+    tty: true
+    environment:
+      - PORT=5000
+
+  node2:
+    build: .
+    container_name: cli_node2
+    networks:
+      bitcoin_net:
+        ipv4_address: 172.28.0.12
+    stdin_open: true
+    tty: true
+    environment:
+      - PORT=5000
+
+  miner1:
+    build: .
+    container_name: cli_miner1
+    networks:
+      bitcoin_net:
+        ipv4_address: 172.28.0.13
+    stdin_open: true
+    tty: true
+    environment:
+      - PORT=5000
+
+  miner2:
+    build: .
+    container_name: cli_miner2
+    networks:
+      bitcoin_net:
+        ipv4_address: 172.28.0.14
+    stdin_open: true
+    tty: true
+    environment:
+      - PORT=5000
+
+networks:
+  bitcoin_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
