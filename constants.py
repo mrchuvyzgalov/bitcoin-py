@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class MessageType:
     TX = "tx"
     BLOCK = "block"
@@ -43,3 +46,19 @@ class BlockchainField:
 class DisconnectField:
     HOST = "host"
     PORT = "port"
+
+class Role(Enum):
+    MINER = "miner"
+    USER = "user"
+
+class Stage(Enum):
+    TX = "tx"
+    MINING = "mining"
+
+class Constants:
+    TIME_TO_SLEEP = 60
+
+class RebroadcastField:
+    HOST = "host"
+    PORT = "port"
+    BLOCK = "block"
