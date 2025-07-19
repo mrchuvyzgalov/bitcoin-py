@@ -100,7 +100,10 @@ docker exec -it cli_node1 bash
 
 Run the program as shown in **Run Modes** section
 
-**5. Launch the tests:**
+
+---
+
+## 🧪 Test Execution (Docker Setup)
 
 To launch Unit tests, execute the following command:
 
@@ -116,7 +119,10 @@ To launch Integration tests, execute the following command:
 pytest integration_tests.py
 ```
 
-**6. Launch the research:**
+
+---
+
+## 📊 Running TPS Research
 
 The research on transactions per second (TPS) is a crucial part of my Master’s Thesis, aimed at comparing two different Bitcoin architectures. This module is designed to measure the TPS of the system.  
 
