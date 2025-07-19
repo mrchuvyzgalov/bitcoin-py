@@ -23,15 +23,6 @@ def _get_local_ip():
     return ip
 
 
-def _request_chain(peer) -> None:
-    try:
-        with socket.socket() as s:
-            s.connect(peer)
-            s.send(json.dumps({MessageField.TYPE: MessageType.REQUEST_CHAIN}).encode())
-    except Exception as e:
-        print(f"❌ Failed to request a chain from {peer}: {e}")
-
-
 class Node:
     def __init__(self, host: str, port: int, role: Role, wallet_file="my_wallet.txt"):
         self._host = host
@@ -50,7 +41,7 @@ class Node:
         self.stage: Stage = Stage.TX
         self._stage_lock = threading.Lock()
 
-        self._message_queue = queue.Queue()
+        self.message_queue = queue.Queue()
 
         self._mining_thread = None
 
@@ -77,7 +68,7 @@ class Node:
     def _process_message_queue(self):
         while True:
             time.sleep(3)
-            message = self._message_queue.get()
+            message = self.message_queue.get()
             try:
                 self._handle_message(message)
             except Exception as e:
@@ -86,7 +77,7 @@ class Node:
     def disconnect(self):
         self._broadcast_disconnect()
 
-    def _verify_and_add_block(self, block):
+    def verify_and_add_block(self, block):
         if block.previous_hash == self.blockchain.chain[-1].hash():
             if self.blockchain.validate_block(block):
                 self._clear_pending_blocks()
@@ -109,11 +100,15 @@ class Node:
 
     def _handle_tcp_connection(self, conn):
         try:
-            data = conn.recv(100000).decode()
-            if not data:
-                return
+            buffer = b""
+            while True:
+                chunk = conn.recv(4096)
+                if not chunk:
+                    break
+                buffer += chunk
+            data = buffer.decode()
             message = json.loads(data)
-            self._message_queue.put(message)
+            self.message_queue.put(message)
         except Exception as e:
             print("❌ TCP error:", e)
         finally:
@@ -144,7 +139,7 @@ class Node:
             if 2 * best_votes >= len(self.peers):
                 if self._is_leader():
                     self._finalize_block(block=best_block)
-                    self._message_queue.put(
+                    self.message_queue.put(
                         {
                             MessageField.TYPE: MessageType.FINALISE_BLOCK,
                             MessageField.DATA: best_block.to_dict()
@@ -161,7 +156,7 @@ class Node:
 
         elif msg_type == MessageType.FINALISE_BLOCK:
             block = DeserializeService.deserialize_block(data)
-            self._verify_and_add_block(block)
+            self.verify_and_add_block(block)
             self._set_stage(Stage.TX)
 
             self._mining_thread = threading.Thread(target=self._broadcast_mining, daemon=True)
@@ -185,7 +180,7 @@ class Node:
                 self._register_pending_block(block)
 
                 self._rebroadcast_block(block)
-                self._message_queue.put(
+                self.message_queue.put(
                     {
                         MessageField.TYPE: MessageType.REBROADCAST,
                         MessageField.DATA: {
@@ -209,7 +204,7 @@ class Node:
                 block = self.blockchain.mine_block(self.address)
 
                 self._broadcast_block(block)
-                self._message_queue.put({
+                self.message_queue.put({
                     MessageField.TYPE: MessageType.BLOCK,
                     MessageField.DATA: block.to_dict()
                 })
@@ -278,6 +273,12 @@ class Node:
             MessageField.DATA: block.to_dict()
         })
 
+    def add_and_broadcast_tx(self, tx: Transaction) -> bool:
+        if self.blockchain.add_transaction(tx):
+            self.broadcast_transaction(tx)
+            return True
+        return False
+
     def _listen_discovery(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('', self._discovery_port))
@@ -293,7 +294,7 @@ class Node:
             message = {MessageField.TYPE: MessageType.MINING}
             self._broadcast(message)
             if self.role == Role.MINER:
-                self._message_queue.put(message)
+                self.message_queue.put(message)
 
     def _broadcast_presence(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

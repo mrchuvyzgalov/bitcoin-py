@@ -57,6 +57,8 @@ class Stage(Enum):
 
 class Constants:
     TIME_TO_SLEEP = 60
+    MINER_REWARD = 50
+    DIFFICULTY = 3
 
 class RebroadcastField:
     HOST = "host"

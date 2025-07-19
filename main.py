@@ -55,8 +55,7 @@ def show_menu(node: Node):
                 amt = int(amt)
                 tx = create_transaction(node, to, amt)
                 if tx:
-                    node.blockchain.add_transaction(tx)
-                    node.broadcast_transaction(tx)
+                    node.add_and_broadcast_tx(tx)
             except:
                 print(f"❌ Data error")
         elif choice == "4":
