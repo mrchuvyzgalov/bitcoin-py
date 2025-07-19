@@ -23,9 +23,9 @@ services:
     environment:
       - PORT=5000
 
-  miner1:
+  node3:
     build: .
-    container_name: cli_miner1
+    container_name: cli_node3
     networks:
       bitcoin_net:
         ipv4_address: 172.28.0.13
@@ -34,12 +34,34 @@ services:
     environment:
       - PORT=5000
 
-  miner2:
+  node4:
     build: .
-    container_name: cli_miner2
+    container_name: cli_node4
     networks:
       bitcoin_net:
         ipv4_address: 172.28.0.14
+    stdin_open: true
+    tty: true
+    environment:
+      - PORT=5000
+
+  node5:
+    build: .
+    container_name: cli_node5
+    networks:
+      bitcoin_net:
+        ipv4_address: 172.28.0.15
+    stdin_open: true
+    tty: true
+    environment:
+      - PORT=5000
+
+  node6:
+    build: .
+    container_name: cli_node6
+    networks:
+      bitcoin_net:
+        ipv4_address: 172.28.0.16
     stdin_open: true
     tty: true
     environment:

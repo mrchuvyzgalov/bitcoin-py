@@ -3,6 +3,7 @@ import socket
 import random
 import os
 
+from constants import Role, Stage
 from node import Node
 from transaction import TxInput, TxOutput, Transaction
 from wallet import save_wallet, generate_keypair
@@ -45,14 +46,16 @@ def show_menu(node: Node):
             bal = node.blockchain.get_balance(node.address)
             print(f"💰 Balance: {bal} BTC")
         elif choice == "3":
+            if node.get_stage() != Stage.TX:
+                print("Wait a little bit... And repeat")
+                continue
             to = input("Recipient (address): ").strip()
             amt = input("Amount of coins: ").strip()
             try:
                 amt = int(amt)
                 tx = create_transaction(node, to, amt)
                 if tx:
-                    node.blockchain.add_transaction(tx)
-                    node._broadcast_transaction(tx)
+                    node.add_and_broadcast_tx(tx)
             except:
                 print(f"❌ Data error")
         elif choice == "4":
@@ -101,16 +104,16 @@ def create_transaction(node: Node, to_address: str, amount: int) -> Transaction 
     return tx
 
 if __name__ == "__main__":
-    is_miner = False
+    role = Role.USER
 
     if len(sys.argv) > 1:
         command = sys.argv[1]
         if command == "miner":
-            is_miner = True
+            role = Role.MINER
 
     ensure_wallet()
     port = choose_port()
-    node = Node("0.0.0.0", port, is_miner)
+    node = Node("0.0.0.0", port, role)
     node.start()
 
     show_menu(node)

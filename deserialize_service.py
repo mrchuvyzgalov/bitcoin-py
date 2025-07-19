@@ -1,7 +1,7 @@
 from typing import List
 
 from blockchain import Block
-from constants import TxField, BlockField, BlockchainField, DisconnectField
+from constants import TxField, BlockField, BlockchainField, DisconnectField, RebroadcastField
 from transaction import Transaction, TxInput, TxOutput
 
 
@@ -12,6 +12,11 @@ class DeserializeService:
         outputs = [TxOutput(**o) for o in data[TxField.OUTPUTS]]
         metadata = data.get(TxField.METADATA, {})
         return Transaction(inputs, outputs, metadata)
+
+    @staticmethod
+    def deserialize_rebroadcast(data: dict) -> (str, int, Block):
+        block = DeserializeService.deserialize_block(data[RebroadcastField.BLOCK])
+        return data[RebroadcastField.HOST], int(data[RebroadcastField.PORT]), block
 
     @staticmethod
     def deserialize_block(data: dict):

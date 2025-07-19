@@ -2,7 +2,7 @@ import copy
 import time
 import hashlib
 
-from constants import BlockField, BlockchainField
+from constants import BlockField, BlockchainField, Constants, MetadataType
 from transaction import Transaction, TxOutput
 
 class Block:
@@ -32,12 +32,17 @@ class Block:
             BlockField.TIMESTAMP: self.timestamp
         }
 
+
+def _create_genesis_block() -> Block:
+    return Block(0, "0" * 64, [], 0, 1720000000.0)
+
+
 class Blockchain:
     def __init__(self) -> None:
-        self.chain = [self._create_genesis_block()]
+        self.chain = [_create_genesis_block()]
         self.pending_txs = []
         self.utxo_set = {}
-        self.difficulty = 3
+        self.difficulty = Constants.DIFFICULTY
 
     def print_chain(self) -> None:
         print("\n📦 Current blockchain:")
@@ -46,12 +51,9 @@ class Blockchain:
             for tx in block.transactions:
                 print(f"    └─ tx {tx.hash()[:8]}")
 
-    def _create_genesis_block(self) -> Block:
-        return Block(0, "0" * 64, [], 0, 1720000000.0)
-
     def mine_block(self, miner_address: str) -> Block:
         height = len(self.chain)
-        coinbase = Transaction([], [TxOutput(50, miner_address)], {"height": height})
+        coinbase = Transaction([], [TxOutput(Constants.MINER_REWARD, miner_address)], {MetadataType.HEIGHT: height})
         txs = [coinbase] + self.pending_txs
         block = Block(height, self.chain[-1].hash(), txs)
 
@@ -162,7 +164,7 @@ class Blockchain:
                 for tx in block.transactions:
                     self.update_utxo_set(tx)
                 return True
-            return False
+        return False
 
     def try_to_update_chain(self, blocks: list[Block]):
         if len(self.chain) < len(blocks):
