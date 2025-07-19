@@ -103,7 +103,7 @@ Run the program as shown in **Run Modes** section
 
 ---
 
-## 🧪 Test Execution (Docker Setup)
+## 🧪 Test Execution 
 
 To launch Unit tests, execute the following command:
 
