@@ -20,7 +20,7 @@ def start_research(node: Node, addresses: list[str]) -> (int, float): # (amount 
     amount_of_added_txs = 0
     start = time.time()
 
-    delay = 0.12
+    delay = 0.08
 
     while len(node.blockchain.chain) - amount_of_blocks_before != amount_of_generated_blocks:
         if node.get_stage() != Stage.TX:
