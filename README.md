@@ -27,6 +27,7 @@ Simulation of a simplified Bitcoin-like network implemented in Python using UTXO
 - **main.py** — CLI entry point (node or miner mode)
 - **unit_tests.py** — Unit tests for blockchain logic
 - **integration_tests.py** — Integration tests for node communication logic
+- **pre_research.py** — preparation for research
 - **research.py** — master thesis research
 - **Dockerfile** — docker build for single node  
 - **docker-compose.yml** — multi-node configuration (nodes + miners)  
@@ -128,7 +129,7 @@ The research on transactions per second (TPS) is a crucial part of my Master’s
 
 The experiment involves 1 miner node and 3 non-miner nodes. First, the miner is initialized and mines 2000 blocks to prepare the blockchain. After this preparation phase, the 3 non-miner nodes join the network.  
 
-During the experiment, the miner sends 1 BTC to a randomly selected non-miner every 0.12 seconds, continuing this process until 3 new blocks are mined. This setup enables the estimation of the approximate TPS achieved under these conditions.  
+During the experiment, the miner sends 1 BTC to a randomly selected non-miner every 0.08 seconds, continuing this process until 3 new blocks are mined. This setup enables the estimation of the approximate TPS achieved under these conditions.  
 
 In ordef to launch miner, execute the following command:
 
@@ -139,16 +140,25 @@ python research.py miner
 In ordef to launch non-miner, execute the following command:
 
 ```bash
-python research.py
+python research.py user {number of user (0/1/2)}
+```
+
+For example:
+
+```bash
+python research.py user 2
 ```
 
 To start the research, you need to follow these steps:  
 
-1. Launch miner node and wait until the miner preparation is complete  
-2. Launch 3 non-miner nodes  
-3. Pass the addresses of other nodes to the miner node via CLI  
-4. Launch researching in the miner node and wait the results  
-5. When the research is complete, you will see the following results: amount of added transactions, time spent and tps
+1. Launch preparation research file:
+   ```bash
+    python pre_research.py
+    ```
+2. Launch miner node (you should use docker containers)  
+3. Launch 3 non-miner nodes (you should use docker containers)  
+5. Launch researching in the miner node and wait the results  
+6. When the research is complete, you will see the following results: amount of added transactions, time spent and tps
 
 
 ---
