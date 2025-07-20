@@ -74,7 +74,7 @@ def show_menu(node: Node):
 def create_transaction(node: Node, to_address: str, amount: int) -> Transaction | None:
     utxos = node.blockchain.get_effective_utxo_set()
     my_address = node.address
-    my_privkey = node.wallet
+    my_privkey = node.private_key
 
     selected_inputs = []
     total = 0
