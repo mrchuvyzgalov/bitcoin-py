@@ -131,13 +131,13 @@ The experiment involves 1 miner node and 3 non-miner nodes. First, the miner is 
 
 During the experiment, the miner sends 1 BTC to a randomly selected non-miner every 0.08 seconds, continuing this process until 3 new blocks are mined. This setup enables the estimation of the approximate TPS achieved under these conditions.  
 
-In ordef to launch miner, execute the following command:
+In order to launch miner, execute the following command:
 
 ```bash
 python research.py miner
 ```
 
-In ordef to launch non-miner, execute the following command:
+In order to launch non-miner, execute the following command:
 
 ```bash
 python research.py user {number of user (0/1/2)}
