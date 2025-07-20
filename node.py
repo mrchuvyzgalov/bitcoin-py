@@ -29,8 +29,8 @@ class Node:
         self._port = port
         self.peers = set()
         self.blockchain = Blockchain()
-        self.wallet = load_wallet(wallet_file)
-        self.address = pubkey_to_address(self.wallet)
+        self.private_key = load_wallet(wallet_file)
+        self.address = pubkey_to_address(self.private_key)
         self._discovery_port = 9000
         self._external_ip = _get_local_ip()
         self.role = role
@@ -67,7 +67,7 @@ class Node:
 
     def _process_message_queue(self):
         while True:
-            time.sleep(3)
+            time.sleep(1)
             message = self.message_queue.get()
             try:
                 self._handle_message(message)
@@ -102,7 +102,7 @@ class Node:
         try:
             buffer = b""
             while True:
-                chunk = conn.recv(4096)
+                chunk = conn.recv(10000)
                 if not chunk:
                     break
                 buffer += chunk

@@ -30,6 +30,13 @@ def load_wallet(filename: str) -> str:
         return f.read()
 
 
+def get_public_key(privkey_b64: str) -> str:
+    sk = ecdsa.SigningKey.from_string(base64.b64decode(privkey_b64), curve=ecdsa.SECP256k1)
+    vk = sk.get_verifying_key()
+    pubkey_bytes = vk.to_string()
+    return base64.b64encode(pubkey_bytes).decode()
+
+
 def sign(message: str, privkey_b64: str) -> str:
     sk = ecdsa.SigningKey.from_string(base64.b64decode(privkey_b64), curve=ecdsa.SECP256k1)
     signature = sk.sign(message.encode())
