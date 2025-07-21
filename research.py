@@ -1,10 +1,9 @@
 import json
-import os
 import random
 import sys
 import time
 
-from constants import Role, Stage
+from constants import Role, Stage, Constants
 from deserialize_service import DeserializeService
 from main import choose_port, create_transaction
 from node import Node
@@ -20,7 +19,7 @@ def start_research(node: Node, addresses: list[str]) -> (int, float): # (amount 
     amount_of_added_txs = 0
     start = time.time()
 
-    delay = 0.08
+    delay = 0.01
 
     while len(node.blockchain.chain) - amount_of_blocks_before != amount_of_generated_blocks:
         if node.get_stage() != Stage.TX:
@@ -84,6 +83,8 @@ def show_menu(node: Node):
             print("⚠️ Incorrect input")
 
 if __name__ == "__main__":
+    Constants.TIME_TO_SLEEP = 600
+    AMOUNT_OF_START_BLOCKS = 30
     role = Role.USER
     wallet_file = "my_wallet.txt"
 
@@ -108,4 +109,10 @@ if __name__ == "__main__":
 
     node.start()
 
+    while True:
+        time.sleep(2)
+        if len(node.blockchain.chain) >= AMOUNT_OF_START_BLOCKS:
+            break
+
+    print("❗❗❗You can start research...")
     show_menu(node)
