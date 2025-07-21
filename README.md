@@ -127,9 +127,9 @@ pytest integration_tests.py
 
 The research on transactions per second (TPS) is a crucial part of my Master’s Thesis, aimed at comparing two different Bitcoin architectures. This module is designed to measure the TPS of the system.  
 
-The experiment involves 1 miner node and 3 non-miner nodes. First, the miner is initialized and mines 2000 blocks to prepare the blockchain. After this preparation phase, the 3 non-miner nodes join the network.  
+The experiment involves 1 miner node and 3 non-miner nodes. First, the miner is initialized and mines 30 blocks with 1001 transactions in each block to prepare the blockchain. After this preparation phase, the 3 non-miner nodes join the network.  
 
-During the experiment, the miner sends 1 BTC to a randomly selected non-miner every 0.08 seconds, continuing this process until 3 new blocks are mined. This setup enables the estimation of the approximate TPS achieved under these conditions.  
+During the experiment, the miner sends 1 BTC to a randomly selected non-miner every 0.01 seconds, continuing this process until 3 new blocks are mined. This setup enables the estimation of the approximate TPS achieved under these conditions.  
 
 In order to launch miner, execute the following command:
 
