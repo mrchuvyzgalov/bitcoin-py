@@ -8,7 +8,7 @@ from blockchain import Blockchain, Block
 from constants import MessageType, MessageField, DisconnectField, Role, Stage, Constants, RebroadcastField
 from deserialize_service import DeserializeService
 from transaction import Transaction
-from wallet import load_wallet, pubkey_to_address
+from wallet import load_wallet, pubkey_to_address, get_public_key
 
 
 def _get_local_ip():
@@ -30,7 +30,8 @@ class Node:
         self.peers = set()
         self.blockchain = Blockchain()
         self.private_key = load_wallet(wallet_file)
-        self.address = pubkey_to_address(self.private_key)
+        self.public_key = get_public_key(self.private_key)
+        self.address = pubkey_to_address(self.public_key)
         self._discovery_port = 9000
         self._external_ip = _get_local_ip()
         self.role = role
