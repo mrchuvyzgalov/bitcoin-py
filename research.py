@@ -1,7 +1,11 @@
 import json
 import random
+import statistics
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
+
+import numpy as np
 
 from constants import Role, Stage, Constants
 from deserialize_service import DeserializeService
@@ -9,8 +13,9 @@ from main import choose_port, create_transaction
 from node import Node
 from wallet import load_wallet, pubkey_to_address, get_public_key
 
+def start_research(node: Node, addresses: list[str]) -> None:
+    # time_of_work, amount of transactions, tps, transaction latency
 
-def start_research(node: Node, addresses: list[str]) -> (int, float): # (amount of added txs, time)
     coins_to_send = 1
 
     amount_of_blocks_before = len(node.blockchain.chain)
@@ -19,9 +24,23 @@ def start_research(node: Node, addresses: list[str]) -> (int, float): # (amount 
     amount_of_added_txs = 0
     start = time.time()
 
+    tx_submit_time = {}
+    tx_latencies = []
+
     delay = 0.01
 
+    old_amount_of_blocks = len(node.blockchain.chain)
+
     while len(node.blockchain.chain) - amount_of_blocks_before != amount_of_generated_blocks:
+        if len(node.blockchain.chain) - old_amount_of_blocks == 1:
+            old_amount_of_blocks = len(node.blockchain.chain)
+
+            for tx in node.blockchain.chain[-1].transactions:
+                tx_id = tx.hash()
+                if tx_id in tx_submit_time:
+                    latency = time.time() - tx_submit_time[tx_id]
+                    tx_latencies.append(latency)
+
         if node.get_stage() != Stage.TX:
             time.sleep(delay)
             continue
@@ -29,10 +48,65 @@ def start_research(node: Node, addresses: list[str]) -> (int, float): # (amount 
         tx = create_transaction(node, random.choice(addresses), coins_to_send)
         if node.add_and_broadcast_tx(tx):
             amount_of_added_txs += 1
+            tx_submit_time[tx.hash()] = time.time()
 
         time.sleep(delay)
 
-    return amount_of_added_txs, time.time() - start
+    time_of_work = time.time() - start
+    tps = amount_of_added_txs / time_of_work
+
+    print("Amount of transactions: ", amount_of_added_txs)
+    print("Time spent: ", time_of_work / 60.0, " minutes")
+    print("TPS: ", tps)
+
+    print("📊 Transaction Latency (ms):")
+    print(f"  avg: {np.mean(tx_latencies)  * 1000:.2}")
+    print(f"  min: {np.min(tx_latencies) * 1000:.2}")
+    print(f"  max: {np.max(tx_latencies) * 1000:.2}")
+    print(f"  std: {np.std(tx_latencies) * 1000:.2}")
+
+    # read_latency
+
+    latencies = []
+    addresses.append(node.address)
+
+    for i in range(1000):
+        addr = addresses[i % len(addresses)]
+        t1 = time.perf_counter()
+        node.blockchain.get_balance(addr)
+        t2 = time.perf_counter()
+        latencies.append(t2 - t1)
+
+    print("Read Latency (ns):")
+    print(f"  avg: {statistics.mean(latencies) * 1_000_000_000:.2f}")
+    print(f"  min: {min(latencies) * 1_000_000_000:.2f}")
+    print(f"  max: {max(latencies) * 1_000_000_000:.2f}")
+    print(f"  std: {statistics.stdev(latencies) * 1_000_000_000:.2f}")
+
+    # read_throughput
+
+    NUM_THREADS = 10
+    READS_PER_THREAD = 1000
+
+    def read_task():
+        count = 0
+        for i in range(READS_PER_THREAD):
+            node.blockchain.get_balance(addresses[i % len(addresses)])
+            count += 1
+        return count
+
+    start = time.time()
+    with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
+        futures = [executor.submit(read_task) for _ in range(NUM_THREADS)]
+        results = [f.result() for f in futures]
+    end = time.time()
+
+    total_reads = sum(results)
+    throughput = total_reads / (end - start)
+    print(f"Read Throughput: {throughput:.2f} reads/sec")
+
+
+
 
 def get_addresses() -> list[str]:
     wallet_files = [
@@ -67,10 +141,8 @@ def show_menu(node: Node):
         choice = input("Choice: ").strip()
         if choice == "1":
             print("Research started")
-            tx_amount, sec = start_research(node, addresses)
-            print("Amount of transactions: ", tx_amount)
-            print("Time spent: ", sec / 60.0, " minutes")
-            print("TPS: ", tx_amount / sec)
+            start_research(node, addresses)
+            print("Research finished")
 
         elif choice == "4":
             node.blockchain.print_chain()
